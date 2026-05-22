@@ -3,7 +3,8 @@ uvicorn[standard]
 sqlalchemy
 pydantic
 pydantic-settings
-anthropic
+# anthropic
+groq
 pdfplumber
 python-jose[cryptography]
 passlib[bcrypt]

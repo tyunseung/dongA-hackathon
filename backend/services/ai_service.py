@@ -1,9 +1,19 @@
 import os
 import json
-import anthropic
+from groq import AsyncGroq
 
-client = anthropic.AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-MODEL = "claude-sonnet-4-6"
+# --- Anthropic (주석 처리) ---
+# import anthropic
+# client = anthropic.AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+# MODEL = "claude-sonnet-4-6"
+# async def _call(system: str, messages: list[dict], max_tokens: int) -> str:
+#     response = await client.messages.create(
+#         model=MODEL, max_tokens=max_tokens, system=system, messages=messages
+#     )
+#     return response.content[0].text
+
+client = AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
+MODEL = "llama-3.3-70b-versatile"
 
 SYSTEM_PROMPT = (
     "당신은 팀 프로젝트 매칭 플랫폼의 AI 어시스턴트입니다. "
@@ -12,14 +22,18 @@ SYSTEM_PROMPT = (
 )
 
 
-async def chat(messages: list[dict]) -> str:
-    response = await client.messages.create(
+async def _call(system: str, messages: list[dict], max_tokens: int) -> str:
+    full_messages = [{"role": "system", "content": system}] + messages
+    response = await client.chat.completions.create(
         model=MODEL,
-        max_tokens=1024,
-        system=SYSTEM_PROMPT,
-        messages=messages,
+        max_tokens=max_tokens,
+        messages=full_messages,
     )
-    return response.content[0].text
+    return response.choices[0].message.content
+
+
+async def chat(messages: list[dict]) -> str:
+    return await _call(SYSTEM_PROMPT, messages, max_tokens=1024)
 
 
 async def generate_tags_from_conversation(conversation: list[dict]) -> list[str]:
@@ -28,12 +42,8 @@ async def generate_tags_from_conversation(conversation: list[dict]) -> list[str]
         "태그는 짧은 단어나 구문으로 구성하며, JSON 배열 형식으로만 반환하세요. 예: [\"Python\", \"머신러닝\", \"스타트업\"]\n\n"
         "대화:\n" + json.dumps(conversation, ensure_ascii=False)
     )
-    response = await client.messages.create(
-        model=MODEL,
-        max_tokens=512,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    text = response.content[0].text.strip()
+    text = await _call("", [{"role": "user", "content": prompt}], max_tokens=512)
+    text = text.strip()
     start, end = text.find("["), text.rfind("]")
     if start != -1 and end != -1:
         return json.loads(text[start : end + 1])
@@ -51,12 +61,7 @@ async def generate_recommendation_reason(
         f"추천 대상 설명: {target_description}\n\n"
         "위 정보를 바탕으로 이 추천이 사용자에게 적합한 이유를 1-2문장으로 작성하세요."
     )
-    response = await client.messages.create(
-        model=MODEL,
-        max_tokens=256,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return response.content[0].text.strip()
+    return await _call("", [{"role": "user", "content": prompt}], max_tokens=256)
 
 
 async def analyze_team_status(members_data: list[dict]) -> dict:
@@ -66,12 +71,8 @@ async def analyze_team_status(members_data: list[dict]) -> dict:
         "\"gaps\": [\"부족한 역량1\", ...], \"diversity_score\": 0.0~1.0}\n\n"
         "팀원 데이터:\n" + json.dumps(members_data, ensure_ascii=False)
     )
-    response = await client.messages.create(
-        model=MODEL,
-        max_tokens=1024,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    text = response.content[0].text.strip()
+    text = await _call("", [{"role": "user", "content": prompt}], max_tokens=1024)
+    text = text.strip()
     start, end = text.find("{"), text.rfind("}")
     if start != -1 and end != -1:
         return json.loads(text[start : end + 1])
