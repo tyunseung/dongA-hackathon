@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+pydantic-settings
+anthropic
+pdfplumber
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
