@@ -18,7 +18,7 @@ class RoomCreateRequest(BaseModel):
 
 
 @router.get("/")
-def list_rooms(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def list_rooms(db: Session = Depends(get_db)):
     return [
         {
             "id": r.id,

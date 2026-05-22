@@ -10,16 +10,37 @@ import { api } from "@/lib/api";
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [joining, setJoining] = useState<number | null>(null);
   const [joined, setJoined] = useState<Set<number>>(new Set());
+  const [hasScores, setHasScores] = useState(false);
 
   useEffect(() => {
-    api
-      .get<Room[]>("/api/recommend/rooms")
-      .then(setRooms)
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
+    const load = async () => {
+      // 전체 방 목록 (인증 불필요)
+      const all = await api.get<Room[]>("/api/rooms/");
+      setRooms(all);
+      setLoading(false);
+
+      // 로그인 상태면 AI 추천 점수 추가
+      if (api.hasToken()) {
+        api
+          .get<Room[]>("/api/recommend/rooms")
+          .then((recommended) => {
+            if (recommended.length === 0) return;
+            const scoreMap = new Map(recommended.map((r) => [r.id, r]));
+            setRooms(
+              all.map((r) => {
+                const rec = scoreMap.get(r.id);
+                return rec ? { ...r, score: rec.score, reason: rec.reason } : r;
+              })
+            );
+            setHasScores(true);
+          })
+          .catch(() => {}); // 태그 없거나 실패해도 전체 목록은 유지
+      }
+    };
+
+    load().catch(() => setLoading(false));
   }, []);
 
   const handleJoin = async (id: number) => {
@@ -39,9 +60,11 @@ export default function RoomsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">추천 방 목록</h1>
+          <h1 className="text-2xl font-bold">방 목록</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            내 태그와 유사한 방을 AI가 추천합니다.
+            {hasScores
+              ? "내 태그 기반 AI 추천 점수가 표시됩니다."
+              : "로그인 후 AI 분석으로 태그를 생성하면 맞춤 추천 점수를 볼 수 있어요."}
           </p>
         </div>
         <Link href="/rooms/create">
@@ -60,35 +83,28 @@ export default function RoomsPage() {
         </div>
       )}
 
-      {error && (
-        <div className="text-center py-20 text-destructive">
-          <p>{error}</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            로그인이 필요하거나 태그가 설정되지 않았습니다.
-          </p>
-        </div>
-      )}
-
-      {!loading && !error && rooms.length === 0 && (
+      {!loading && rooms.length === 0 && (
         <div className="text-center py-20 text-muted-foreground">
-          <p>추천 방이 없습니다.</p>
-          <p className="text-sm mt-1">먼저 AI 분석으로 태그를 설정해보세요.</p>
-          <Link href="/analyze" className="mt-4 inline-block">
-            <Button variant="outline">AI 분석하기</Button>
+          <p>아직 방이 없습니다.</p>
+          <Link href="/rooms/create" className="mt-4 inline-block">
+            <Button variant="outline">첫 번째 방 만들기</Button>
           </Link>
         </div>
       )}
 
       {!loading && rooms.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {rooms.map((room) => (
-            <RoomCard
-              key={room.id}
-              room={room}
-              showScore
-              onJoin={joined.has(room.id) ? undefined : handleJoin}
-            />
-          ))}
+          {rooms
+            .slice()
+            .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+            .map((room) => (
+              <RoomCard
+                key={room.id}
+                room={room}
+                showScore={hasScores}
+                onJoin={joined.has(room.id) ? undefined : handleJoin}
+              />
+            ))}
         </div>
       )}
     </div>

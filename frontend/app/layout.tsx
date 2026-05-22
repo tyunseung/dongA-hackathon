@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
+import AuthHeader from "@/components/AuthHeader";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -36,13 +37,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Link>
               ))}
             </nav>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-4">
               <Link
                 href="/rooms/create"
                 className="text-sm font-medium text-primary hover:underline"
               >
                 + 방 만들기
               </Link>
+              <AuthHeader />
             </div>
           </div>
         </header>

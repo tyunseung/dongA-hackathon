@@ -1,6 +1,9 @@
 import os
 import json
+from dotenv import load_dotenv
 from groq import AsyncGroq
+
+load_dotenv()
 
 # --- Anthropic (주석 처리) ---
 # import anthropic
@@ -23,11 +26,16 @@ SYSTEM_PROMPT = (
 
 
 async def _call(system: str, messages: list[dict], max_tokens: int) -> str:
-    full_messages = [{"role": "system", "content": system}] + messages
+    # system이 비어있으면 추가하지 않음 (Groq는 빈 system 메시지를 거부)
+    prefix = [{"role": "system", "content": system}] if system else []
+    # Groq는 첫 메시지가 반드시 user여야 하므로 앞의 assistant 메시지 제거
+    trimmed = list(messages)
+    while trimmed and trimmed[0]["role"] != "user":
+        trimmed.pop(0)
     response = await client.chat.completions.create(
         model=MODEL,
         max_tokens=max_tokens,
-        messages=full_messages,
+        messages=prefix + trimmed,
     )
     return response.choices[0].message.content
 
