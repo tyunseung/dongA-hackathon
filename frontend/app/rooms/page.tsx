@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, X, Users, Star, ExternalLink, Calendar, Zap } from "lucide-react";
+import { Plus, X, Users, Star, ExternalLink, Calendar, Zap, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import RoomCard, { type Room } from "@/components/RoomCard";
+import RoomChatModal from "@/components/RoomChatModal";
 import { api } from "@/lib/api";
 
 function ActivityDesc({ description }: { description: string }) {
@@ -50,6 +51,7 @@ export default function RoomsPage() {
   const [hasScores, setHasScores] = useState(false);
   const [selected, setSelected] = useState<Room | null>(null);
   const [recommendedActivities, setRecommendedActivities] = useState<Activity[] | null>(null);
+  const [chatRoom, setChatRoom] = useState<Room | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -99,6 +101,9 @@ export default function RoomsPage() {
     setRecommendedActivities(null);
   };
 
+  const openChat = (room: Room) => setChatRoom(room);
+  const closeChat = () => setChatRoom(null);
+
   const sortedRooms = rooms.slice().sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 
   return (
@@ -146,6 +151,7 @@ export default function RoomsPage() {
               showScore={hasScores}
               isMember={joined.has(room.id)}
               onJoin={joined.has(room.id) ? undefined : () => setSelected(room)}
+              onChat={joined.has(room.id) ? () => openChat(room) : undefined}
             />
           ))}
         </div>
@@ -321,12 +327,30 @@ export default function RoomsPage() {
                   전체 활동 보기
                 </Button>
               </Link>
-              <Button onClick={closeAll} className="flex-1">
-                확인
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={() => {
+                  const room = selected;
+                  closeAll();
+                  if (room) setChatRoom(room);
+                }}
+              >
+                <MessageCircle className="w-4 h-4" />
+                채팅하기
               </Button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* 채팅 모달 */}
+      {chatRoom && (
+        <RoomChatModal
+          roomName={chatRoom.name}
+          memberCount={chatRoom.member_count}
+          onClose={closeChat}
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { Users, Star } from "lucide-react";
+import { Users, Star, MessageCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import TagBadge from "@/components/TagBadge";
@@ -19,9 +19,10 @@ interface RoomCardProps {
   showScore?: boolean;
   isMember?: boolean;
   onJoin?: () => void;
+  onChat?: () => void;
 }
 
-export default function RoomCard({ room, showScore, isMember, onJoin }: RoomCardProps) {
+export default function RoomCard({ room, showScore, isMember, onJoin, onChat }: RoomCardProps) {
   return (
     <Card className="flex flex-col hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
@@ -60,9 +61,15 @@ export default function RoomCard({ room, showScore, isMember, onJoin }: RoomCard
         )}
 
         {isMember ? (
-          <div className="mt-auto w-full text-center py-1.5 rounded-md text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200">
-            참여함
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-auto w-full gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+            onClick={onChat}
+          >
+            <MessageCircle className="w-4 h-4" />
+            채팅하기
+          </Button>
         ) : onJoin && (
           <Button
             variant="outline"
