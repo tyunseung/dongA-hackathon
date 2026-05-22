@@ -1,11 +1,9 @@
 import io
 
 import pdfplumber
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from db.models import User
-from routers.auth import get_current_user
 from services import ai_service
 
 router = APIRouter()
@@ -22,23 +20,19 @@ class ConversationRequest(BaseModel):
 
 
 @router.post("/chat")
-async def chat(req: ChatRequest, current_user: User = Depends(get_current_user)):
+async def chat(req: ChatRequest):
     response = await ai_service.chat(req.messages)
     return {"response": response}
 
 
 @router.post("/generate-tags")
-async def generate_tags(
-    req: ConversationRequest, current_user: User = Depends(get_current_user)
-):
+async def generate_tags(req: ConversationRequest):
     tags = await ai_service.generate_tags_from_conversation(req.conversation)
     return {"tags": tags}
 
 
 @router.post("/upload-pdf")
-async def upload_pdf(
-    file: UploadFile = File(...), current_user: User = Depends(get_current_user)
-):
+async def upload_pdf(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="PDF 파일만 업로드 가능합니다")
 

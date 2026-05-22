@@ -114,3 +114,13 @@ class Recommendation(Base):
     user = relationship("User", back_populates="recommendations")
     room = relationship("Room", back_populates="recommendations")
     activity = relationship("Activity", back_populates="recommendations")
+
+class CrawledActivity(Base):
+    __tablename__ = "crawled_activities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    deadline = Column(String)
+    url = Column(String, unique=True, nullable=False)
+    source = Column(String)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
