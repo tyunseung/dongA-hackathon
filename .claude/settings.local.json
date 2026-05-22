@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "PowerShell(python -c \"import json; data=json.load\\(open\\('C:/Users/LG/Desktop/hackathon/combined_results.json'\\)\\); print\\(f'총 {len\\(data\\)}개'\\); print\\(list\\(data[0].keys\\(\\)\\)\\)\")",
+      "PowerShell(python -c \"import json; data=json.load\\(open\\('C:/Users/LG/Desktop/hackathon/combined_results.json', encoding='utf-8'\\)\\); print\\(f'total {len\\(data\\)}'\\); print\\(list\\(data[0].keys\\(\\)\\)\\)\")"
     ]
   }
 }

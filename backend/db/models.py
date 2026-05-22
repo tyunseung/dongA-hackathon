@@ -121,6 +121,10 @@ class CrawledActivity(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     deadline = Column(String)
-    url = Column(String, unique=True, nullable=False)
+    url = Column(String, unique=True, nullable=True)
     source = Column(String)
+    description = Column(Text)
+    field = Column(String)       # JSON 배열 문자열 e.g. '["AI","백엔드"]'
+    difficulty = Column(String)
+    beginner_ok = Column(String) # "true"/"false"
     created_at = Column(DateTime(timezone=True), server_default=func.now())

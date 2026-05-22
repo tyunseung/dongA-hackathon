@@ -14,6 +14,7 @@ export default function AnalyzePage() {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   const handlePdf = async (file: File) => {
     setPdfLoading(true);
@@ -33,12 +34,18 @@ export default function AnalyzePage() {
   const saveTags = async () => {
     if (!tags.length) return;
     setSaving(true);
+    setSaveError("");
     try {
       await api.post("/api/users/me/tags", { tags });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (e) {
-      console.error(e);
+      const msg = e instanceof Error ? e.message : "저장 실패";
+      if (msg.includes("401") || msg.includes("토큰") || msg.includes("유효하지")) {
+        setSaveError("로그인이 만료됐습니다. 다시 로그인해주세요.");
+      } else {
+        setSaveError(msg);
+      }
     } finally {
       setSaving(false);
     }
@@ -99,6 +106,11 @@ export default function AnalyzePage() {
                 <Button onClick={saveTags} disabled={saving} size="sm">
                   {saved ? "저장 완료 ✓" : saving ? "저장 중…" : "내 프로필에 저장"}
                 </Button>
+                {saveError && (
+                  <p className="text-xs text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                    {saveError}
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}

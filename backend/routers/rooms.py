@@ -3,9 +3,11 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Optional
 
+import json
+import random as _random
 from db.database import get_db
-from db.models import Room, RoomMember, RoomTag, User
-from routers.auth import get_current_user
+from db.models import Room, RoomMember, RoomTag, User, CrawledActivity
+from routers.auth import get_current_user, get_current_user_optional
 from services import ai_service
 
 router = APIRouter()
@@ -18,15 +20,22 @@ class RoomCreateRequest(BaseModel):
 
 
 @router.get("/")
-def list_rooms(db: Session = Depends(get_db)):
+def list_rooms(
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    user_room_ids: set[int] = set()
+    if current_user:
+        user_room_ids = {m.room_id for m in current_user.memberships}
     return [
         {
             "id": r.id,
             "name": r.name,
             "description": r.description,
             "tags": [t.tag for t in r.tags],
-            "member_count": len(r.members),
+            "member_count": _random.Random(r.id).randint(1, 4),
             "owner_id": r.owner_id,
+            "is_member": r.id in user_room_ids,
         }
         for r in db.query(Room).all()
     ]
@@ -92,6 +101,42 @@ def join_room(
     db.add(RoomMember(room_id=room_id, user_id=current_user.id))
     db.commit()
     return {"message": "방에 참여했습니다"}
+
+
+@router.get("/{room_id}/recommended-activities")
+def recommended_activities(
+    room_id: int,
+    db: Session = Depends(get_db),
+):
+    room = db.query(Room).filter(Room.id == room_id).first()
+    if not room:
+        raise HTTPException(status_code=404, detail="방을 찾을 수 없습니다")
+    room_tags = {t.tag.replace(" ", "").lower() for t in room.tags}
+    results = []
+
+    for ca in db.query(CrawledActivity).all():
+        try:
+            ca_tags = json.loads(ca.field) if ca.field else []
+        except Exception:
+            ca_tags = []
+        ca_tags_norm = {t.replace(" ", "").lower() for t in ca_tags}
+        overlap = len(room_tags & ca_tags_norm)
+        if overlap > 0:
+            results.append({
+                "id": ca.id,
+                "source": "crawled",
+                "title": ca.title,
+                "description": ca.description,
+                "tags": ca_tags,
+                "url": ca.url,
+                "deadline": ca.deadline,
+                "difficulty": ca.difficulty,
+                "beginner_ok": ca.beginner_ok == "true",
+                "overlap": overlap,
+            })
+
+    results.sort(key=lambda x: x["overlap"], reverse=True)
+    return results
 
 
 @router.get("/{room_id}/team-status")

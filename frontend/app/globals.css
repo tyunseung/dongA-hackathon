@@ -33,5 +33,20 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-noto), "Noto Sans KR", sans-serif;
   }
+}
+
+.activity-card {
+  border: 0.5px solid hsl(var(--border));
+  transition: border-color 0.15s ease;
+}
+.activity-card:hover {
+  border-color: hsl(215 20% 72%);
+}
+.activity-card-urgent {
+  border-color: #F09595;
+}
+.activity-card-urgent:hover {
+  border-color: #d07575;
 }

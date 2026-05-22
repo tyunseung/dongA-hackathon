@@ -19,13 +19,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from routers import auth, users, analyze, rooms, recommend
+from routers import auth, users, analyze, rooms, recommend, activities
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(analyze.router, prefix="/api/analyze", tags=["analyze"])
 app.include_router(rooms.router, prefix="/api/rooms", tags=["rooms"])
 app.include_router(recommend.router, prefix="/api/recommend", tags=["recommend"])
+app.include_router(activities.router, prefix="/api/activities", tags=["activities"])
 
 
 @app.get("/api/health")

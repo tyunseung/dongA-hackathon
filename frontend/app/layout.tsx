@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans_KR } from "next/font/google";
 import Link from "next/link";
 import AuthHeader from "@/components/AuthHeader";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const notoSansKR = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-noto",
+  preload: false,
+});
 
 export const metadata: Metadata = {
   title: "TeamMatch — AI 팀 매칭 플랫폼",
@@ -20,7 +25,7 @@ const navLinks = [
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className={inter.className}>
+      <body className={`${notoSansKR.variable} font-sans antialiased`}>
         <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
           <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-8">
             <Link href="/" className="font-bold text-lg tracking-tight text-primary">

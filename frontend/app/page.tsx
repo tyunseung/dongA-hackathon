@@ -21,7 +21,7 @@ const features = [
   {
     icon: Users,
     title: "팀 매칭",
-    desc: "Jaccard 유사도로 나와 가장 잘 맞는 팀과 방을 AI가 추천합니다.",
+    desc: "태그 중복도 기반으로 나와 가장 잘 맞는 팀과 방을 AI가 추천합니다.",
     href: "/rooms",
     color: "text-green-600 bg-green-50",
   },
@@ -37,7 +37,7 @@ const features = [
 const steps = [
   { num: "01", title: "대화 or PDF 업로드", desc: "AI 챗봇과 대화하거나 이력서를 업로드하세요" },
   { num: "02", title: "태그 자동 생성", desc: "AI가 관심사와 기술을 분석해 태그를 만들어 줍니다" },
-  { num: "03", title: "팀·활동 추천", desc: "Jaccard 유사도로 가장 잘 맞는 팀과 활동을 추천합니다" },
+  { num: "03", title: "팀·활동 추천", desc: "태그 중복도 점수로 가장 잘 맞는 팀과 활동을 추천합니다" },
 ];
 
 export default function HomePage() {
@@ -55,7 +55,7 @@ export default function HomePage() {
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
           챗봇과 대화하거나 이력서를 업로드하면 AI가 관심사를 분석하고,
-          Jaccard 유사도로 최적의 팀과 활동을 추천합니다.
+          태그 중복도 기반으로 최적의 팀과 활동을 추천합니다.
         </p>
         <div className="flex gap-3 flex-wrap justify-center">
           <Link href="/analyze">

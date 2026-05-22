@@ -11,15 +11,17 @@ export interface Room {
   score?: number;
   reason?: string;
   member_count?: number;
+  is_member?: boolean;
 }
 
 interface RoomCardProps {
   room: Room;
   showScore?: boolean;
-  onJoin?: (id: number) => void;
+  isMember?: boolean;
+  onJoin?: () => void;
 }
 
-export default function RoomCard({ room, showScore, onJoin }: RoomCardProps) {
+export default function RoomCard({ room, showScore, isMember, onJoin }: RoomCardProps) {
   return (
     <Card className="flex flex-col hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
@@ -57,12 +59,16 @@ export default function RoomCard({ room, showScore, onJoin }: RoomCardProps) {
           </p>
         )}
 
-        {onJoin && (
+        {isMember ? (
+          <div className="mt-auto w-full text-center py-1.5 rounded-md text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200">
+            참여함
+          </div>
+        ) : onJoin && (
           <Button
             variant="outline"
             size="sm"
             className="mt-auto w-full"
-            onClick={() => onJoin(room.id)}
+            onClick={() => onJoin()}
           >
             참여하기
           </Button>
